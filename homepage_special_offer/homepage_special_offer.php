@@ -158,7 +158,7 @@ public function displayForm()
        
 
         //Trying to access and print a value from config
-        $configValue = (string) Configuration::getValue('MYMODULE_NAME');
+        $configValue = 'fail';//(string) Configuration::getValue('MYMODULE_NAME');
 
 
         // if ($configValue == null){
