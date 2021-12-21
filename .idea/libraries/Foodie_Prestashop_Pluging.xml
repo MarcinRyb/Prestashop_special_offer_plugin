@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Foodie_Prestashop_Pluging">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/homepage_special_offer_safe.zip!/" />
+      <root url="jar://$PROJECT_DIR$/homepage_special_offer.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
