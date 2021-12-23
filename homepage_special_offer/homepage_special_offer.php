@@ -46,6 +46,7 @@ class homepage_special_offer extends Module
             && Configuration::updateValue('SPECIAL', 0)
             && Configuration::updateValue('OFFER_MODE', 0)
             && Configuration::updateValue('THRESHOLD', 1)
+            && Configuration::updateValue('LAST_PRODUCT_ID', 25)
             &&  $this -> setLastSavedDate()
         );
     }
@@ -59,6 +60,7 @@ class homepage_special_offer extends Module
             && Configuration::deleteByName('OFFER_MODE')
             && Configuration::deleteByName('LAST_SAVED_DATE')
             && Configuration::deleteByName('THRESHOLD')
+            && Configuration::deleteByName('LAST_PRODUCT_ID')
         );
     }
 
@@ -132,6 +134,8 @@ class homepage_special_offer extends Module
                 ],
             ],
         ];
+
+
 
         $helper = new HelperForm();
 
@@ -299,17 +303,28 @@ class homepage_special_offer extends Module
             {
                 $errors = $errors . 'more than a day passed';
                 $this -> setLastSavedDate();
+                $list_of_products = $this -> getAllProductsIds();
+                for ($i = 0; $i < count($list_of_products); $i++) {
+                                        $allProductsIds[$i] = $list_of_products[$i]['id_product'];
+                                    }
 
-//                 //todo: written last
-//                 $shuffle($allProductsIds);
-//                 $randomElement = key($array);
-//                 $lastUsedItem = Configuration::get('LAST_PRODUCT_ID');
-//
-//                 if($randomElement == $lastUsedItem){
-//                     $shuffle($allProductsIds);
-//                     $randomElement = key($array);
-//                 }
-//
+                  shuffle($allProductsIds);
+                $randomElement = $allProductsIds[0];
+                $lastUsedItem = Configuration::get('LAST_PRODUCT_ID');
+                $errors = $errors . ' before shuffeling choosen '. $randomElement ;
+                while($randomElement == $lastUsedItem){
+                    shuffle($allProductsIds);
+                    $errors = $errors . ' shufflin, didnt like '. $randomElement ;
+                    $randomElement = $allProductsIds[0];
+                    $errors = $errors . ' maybe this one? '. $randomElement ;
+                }
+                $errors = $errors . ' after shuffeling choosen '. $randomElement ;
+
+
+                $hrefForProduct = $this->createHrefForProduct($randomElement);
+                                $hrefForProduct = $this->createHrefForProduct($randomElement);
+                                Configuration::updateValue('LAST_PRODUCT_ID', $randomElement);
+
 //                 $hrefForProduct = $this -> createHrefForProduct($randomElement);
                 // $allProductsIds = $this -> getAllProductsIds();
                 // if ($lastProductId == null)  // if there was no random product chosen before
@@ -332,14 +347,8 @@ class homepage_special_offer extends Module
                 //         while ($lastProductId != $rndProductId);
 
                 //         $lastProductId = $rndProductId;
-                $sql_query = 'select id_product from '. _DB_PREFIX_ .'stock_available where quantity= (select MAX(quantity) from '. _DB_PREFIX_ . 'stock_available)';
-                $productId = $this->getProductIdFromDb($sql_query);
-                $hrefForProduct = $this->createHrefForProduct($productId);
-                Configuration::updateValue('LAST_PRODUCT_ID', $productId);
-
-                $hrefForProduct = $this->createHrefForProduct($lastProductId);
-                Configuration::updateValue('LAST_PRODUCT_ID', $lastProductId);
-
+//                 $sql_query = 'select id_product from '. _DB_PREFIX_ .'stock_available where quantity= (select MAX(quantity) from '. _DB_PREFIX_ . 'stock_available)';
+//                 $productId = $this->getProductIdFromDb($sql_query);
             } else {
                 $errors = $errors . 'day not passed';
                 $lastProductId = Configuration::get('LAST_PRODUCT_ID');
@@ -358,17 +367,17 @@ class homepage_special_offer extends Module
 //                     $errors = $errors . 'product with id: ' . $productId .' does not exit';
 //                 }
 
+
                 if($this->searchForProduct($productId)){
                      $errors = $errors . ' product id ' . $productId .' does exist ';
+                     $hrefForProduct = $this->createHrefForProduct($productId);
+                     Configuration::updateValue('LAST_PRODUCT_ID', $productId);
                 } else {
                 $errors = $errors . ' product id ' . $productId .' does not exist is false ';
                 }
 
 
-                $hrefForProduct = $this->createHrefForProduct($productId);
-                Configuration::updateValue('LAST_PRODUCT_ID', $productId);
 
-                $this->warning = $this->l('Choose ID of product that exists');
                 $errors = $errors . ' mode 3, product_id ' . $productId;
             }
 
