@@ -71,10 +71,10 @@ class homepage_special_offer extends Module
             // retrieve the value set by the user
             $specialValue = (string) Tools::getValue('SPECIAL');
             $configValue = (string) Tools::getValue('OFFER_MODE');
-            $thresholdValue = (string) Tools::getValue('THRESHOLD');
+            $thresholdValue = (int) Tools::getValue('THRESHOLD');
 
             // check that the value is valid
-            if (false) {//empty($configValue) || !Validate::isGenericName($configValue)
+            if (($configValue == 3 &&!$this->searchForProduct($specialValue)) || empty($thresholdValue) || is_int($thresholdValue)!=1) {// (configValue==3 && empty($thresholdValue)) || (configValue==3 && empty($thresholdValue)) || !Validate::isGenericName($thresholdValue)) {//empty($configValue) || !Validate::isGenericName($configValue)
                 // invalid value, show an error
                 $output = $this->displayError($this->l('Invalid Configuration value'));
             } else {
@@ -218,6 +218,17 @@ class homepage_special_offer extends Module
         return true;
     }
 
+     private function searchForProduct($productId){
+    $list_of_products = $this -> getAllProductsIds();
+                    for ($i = 0; $i < count($list_of_products); $i++) {
+                        $allProductsIds[$i] = $list_of_products[$i]['id_product'];
+                    }
+                    if (array_search($productId, $allProductsIds, $strict = false)){
+                        return true;
+                    }
+                    return false;
+    }
+
     public function hookDisplayHome($params)
     {
         $errors = '';
@@ -339,13 +350,20 @@ class homepage_special_offer extends Module
                 $productId =  Configuration::get('SPECIAL');
 
                 //check whether such product exits
-                $list_of_products = $this -> getAllProductsIds();
-                for ($i = 0; $i < count($list_of_products); $i++) {
-                    $allProductsIds[$i] = $list_of_products[$i]['id_product'];
+//                 $list_of_products = $this -> getAllProductsIds();
+//                 for ($i = 0; $i < count($list_of_products); $i++) {
+//                     $allProductsIds[$i] = $list_of_products[$i]['id_product'];
+//                 }
+//                 if (!array_search($productId, $allProductsIds, $strict = false)){
+//                     $errors = $errors . 'product with id: ' . $productId .' does not exit';
+//                 }
+
+                if($this->searchForProduct($productId)){
+                     $errors = $errors . ' product id ' . $productId .' does exist ';
+                } else {
+                $errors = $errors . ' product id ' . $productId .' does not exist is false ';
                 }
-                if (!array_search($productId, $allProductsIds, $strict = false)){
-                    $errors = $errors . 'product with id: ' . $productId .' does not exit';
-                }
+
 
                 $hrefForProduct = $this->createHrefForProduct($productId);
                 Configuration::updateValue('LAST_PRODUCT_ID', $productId);
